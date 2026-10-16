@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <!-- 暖黑底：中心微亮、边缘更深的径向渐变（图标方案 D） -->
+    <gradient
+        android:type="radial"
+        android:centerX="0.5"
+        android:centerY="0.42"
+        android:gradientRadius="120dp"
+        android:startColor="#242019"
+        android:endColor="#0D0C0A" />
+</shape>

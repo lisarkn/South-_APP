@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 图标方案 D：暖黑罗盘针指南 + 朱橙加号。
+     108dp 画布，全部图形收在中心 33dp 安全区内，圆形/方形遮罩都不裁切。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 外环 -->
+    <path
+        android:pathData="M24,54 a30,30 0 1,0 60,0 a30,30 0 1,0 -60,0"
+        android:strokeColor="#3B342B"
+        android:strokeWidth="2.4"
+        android:fillColor="#00000000" />
+
+    <!-- 罗盘针（指向南，右倾 18°）：上半浅色、下半朱橙渐变 -->
+    <group
+        android:rotation="18"
+        android:pivotX="54"
+        android:pivotY="54">
+        <path
+            android:pathData="M54,32.5 L61,54 L47,54 Z"
+            android:fillColor="#EFE7DA" />
+        <path android:pathData="M54,75.5 L61,54 L47,54 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="54"
+                    android:startY="54"
+                    android:endX="54"
+                    android:endY="75.5"
+                    android:startColor="#FF8A5C"
+                    android:endColor="#C24A1F" />
+            </aapt:attr>
+        </path>
+    </group>
+
+    <!-- 中心铆钉 -->
+    <path
+        android:pathData="M49,54 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0"
+        android:fillColor="#F8F6F3" />
+    <path
+        android:pathData="M52.1,54 a1.9,1.9 0 1,0 3.8,0 a1.9,1.9 0 1,0 -3.8,0"
+        android:fillColor="#1E1B17" />
+
+    <!-- 右上加号（呼应应用内加号胶囊笔画） -->
+    <path
+        android:pathData="M73.4,29.1 A1.8,1.8 0 0 1 77.0,29.1 L77.0,36.5 A1.8,1.8 0 0 1 73.4,36.5 Z"
+        android:fillColor="#FF8A5C" />
+    <path
+        android:pathData="M71.5,31.0 L78.9,31.0 A1.8,1.8 0 0 1 78.9,34.6 L71.5,34.6 A1.8,1.8 0 0 1 71.5,31.0 Z"
+        android:fillColor="#FF8A5C" />
+</vector>

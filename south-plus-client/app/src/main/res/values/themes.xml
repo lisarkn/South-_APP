@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose 应用使用 Material3 XML 主题仅作为启动窗口主题；窗口背景与首帧 surface 一致，避免启动闪屏 -->
+    <style name="Theme.SouthPlus" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/launch_background</item>
+    </style>
+</resources>

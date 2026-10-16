@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 13+ 主题图标（monochrome）：罗盘针 + 加号剪影，系统自动着色 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M24,54 a30,30 0 1,0 60,0 a30,30 0 1,0 -60,0"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.4"
+        android:fillColor="#00000000" />
+    <group
+        android:rotation="18"
+        android:pivotX="54"
+        android:pivotY="54">
+        <path
+            android:pathData="M54,32.5 L61,54 L47,54 L54,75.5 Z"
+            android:fillColor="#FFFFFFFF" />
+    </group>
+    <path
+        android:pathData="M49,54 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0"
+        android:fillColor="#FFFFFFFF" />
+    <path
+        android:pathData="M73.4,29.1 A1.8,1.8 0 0 1 77.0,29.1 L77.0,36.5 A1.8,1.8 0 0 1 73.4,36.5 Z"
+        android:fillColor="#FFFFFFFF" />
+    <path
+        android:pathData="M71.5,31.0 L78.9,31.0 A1.8,1.8 0 0 1 78.9,34.6 L71.5,34.6 A1.8,1.8 0 0 1 71.5,31.0 Z"
+        android:fillColor="#FFFFFFFF" />
+</vector>

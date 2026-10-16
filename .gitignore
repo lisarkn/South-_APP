@@ -1,0 +1,19 @@
+# ===== 只提交代码：以下内容一律不入库 =====
+
+# AI 会话 / ZCode 工作区文件
+.zcode/
+.zcodeignore
+
+# 设计文件（主题提案、预览页面与截图）
+design/
+
+# 测试代码与测试数据（fixtures 为真实站点抓包，含用户隐私，不入库）
+south-plus-client/app/src/test/
+south-plus-client/app/src/androidTest/
+
+# 测试结果与性能记录文档
+south-plus-client/docs/
+
+# 通用系统文件
+.DS_Store
+Thumbs.db

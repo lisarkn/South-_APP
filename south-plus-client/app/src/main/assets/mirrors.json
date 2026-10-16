@@ -1,0 +1,10 @@
+{
+  "mirrors": [
+    { "host": "www.south-plus.net", "label": "主域" },
+    { "host": "www.blue-plus.net", "label": "蓝镜像" },
+    { "host": "www.white-plus.net", "label": "白镜像" },
+    { "host": "www.summer-plus.net", "label": "夏镜像" },
+    { "host": "www.snow-plus.net", "label": "冬镜像" },
+    { "host": "www.north-plus.net", "label": "北镜像" }
+  ]
+}

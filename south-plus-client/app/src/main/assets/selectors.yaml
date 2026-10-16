@@ -1,0 +1,181 @@
+# 南+ 解析选择器配置（方案 §6.3「选择器配置化」）
+#
+# 说明：
+#  - 每个字段是「候选选择器列表」，按顺序尝试、第一个命中者生效；
+#    站点改版时优先在候选列表里追加/修正，无需改代码；
+#  - { attr: "...", regex: "..." } 表示从属性中用正则提取 ID；
+#    正则为原始字符串（本配置不做转义处理）；
+#  - meta.schema_version 升级时，旧 Room 缓存自动失效（方案 §6.3）；
+#  - 本文件可经 GitHub 静态托管远程热修（默认关闭，设置中可开启）。
+meta:
+  schema_version: 2
+
+# ---------------- 首页（index.php，方案 §2.3） ----------------
+# 2026-09 真机抓包校准（colorImagination 皮肤，标准 PHPWind 8.x 结构）：
+#   分区容器为 <div class="t" id="t_39"><table>…（不是 table.t）；
+#   分区名在 th.h > h2；版块行 tr.tr3[id^=fid_]；描述 span.smalltxt.gray[id^=desc_]；
+#   认证版块行内含 <th>认证论坛</th>；在线信息为 td 文本「在线用户…共 N 人在线」。
+index_page:
+  sections: ["div[id^='t_'] > table", "table.t", "div#category table", "table.t1"]
+  section_name: ["th.h", "td.h h2", "td.h", "caption"]
+  board_link: ["a[href*='thread.php?fid']", "h2 a", "a.fname"]
+  board_fid: { attr: "href", regex: "fid-(\d+)|fid=(\d+)" }
+  board_desc: ["[id^='desc_']", "span.smalltxt.gray", ".tptxt", "p.f_small", "span.small", "td small"]
+  certified_marker: ["th:containsOwn(认证论坛)", "img[src*='certify'], img[alt*='认证'], font[color='red']"]
+  online_info: ["td:contains(在线用户)", "#online", ".online_text", "span.s6"]
+
+# ---------------- 版块帖子列表（thread.php） ----------------
+# 2026-09 真机校准：行 tr.tr3 t_one；主题锚 a[id^=a_ajax_]（行首还有「打开新窗口」
+# 图标链接也是 read.php href，必须避开，否则整行因标题为空被丢弃）；
+# 计数 <td><span class=s8>回复</span> / 人气；最后发表在 a[href*='-page-e-']，
+# 回复人 span.gray2（纯文本 by: xxx）；置顶图标 file/headtopic_N.gif（title="置顶帖标志"）；
+# 附件图标 file/img.gif、file/zip.gif；面包屑 #breadcrumbs（无 #breadCrumb）。
+thread_list:
+  rows: ["tr.tr3", "tr[id^='tr_']", "table.t tr:has(a[href*='read.php'])"]
+  subject: ["a[id^='a_ajax_']", "a[href*='read.php']", "h3 a", "a.subject"]
+  tid: { attr: "href", regex: "tid-(\d+)|tid=(\d+)" }
+  author: ["td.author a[href*='u.php']", "a[href*='u.php']"]
+  author_uid: { attr: "href", regex: "uid-(\d+)|uid=(\d+)" }
+  nums: ["td:has(span.s8)", "td.num em", "td.num"]
+  last_reply_time: ["a[href*='-page-e-']", "td.t3 p", "td.t3", "td.author p"]
+  last_reply_user: ["span.gray2", "td.t3 a[href*='u.php']", "td.author2 a"]
+  attach_marker: ["img[src*='attach'], img[src*='file/img'], img[src*='file/zip'], img[src*='zip'], img[alt*='附件']"]
+  pinned_marker: ["img[src*='headtopic'], img[title*='置顶'], img[alt*='置顶']"]
+  digest_marker: ["img[src*='digest'], img[alt*='精华'], font[color='green']"]
+  locked_marker: ["img[src*='lock'], img[alt*='锁']"]
+  board_name: ["#breadcrumbs a[href*='thread.php?fid']", "#breadCrumb a:last-child", "td.h a:last-child", "h1"]
+  pagination_links: [".pages a", ".page a", "div.pages a"]
+  pagination_current: [".pages b", ".page b", "li.pagesone"]
+
+# ---------------- 帖子阅读（read.php） ----------------
+# 2026-09 真机校准：楼层为 <table class=js-post> 里的 <tr class="tr1 …">，
+# 用户栏 th.r_two（作者锚 a[href*=u.php] 内有 strong，头像锚无文本需避开），
+# 内容 th[id^=td_][id$=pid] > div[id^=read_]；楼层头 .tiptop（楼层号 B4F + 发表时间）。
+# 注意：外层容器是 div.t5.t2（不是 table.t5）。
+# 2026-09-30 真机抓包：分页链接带 fpage-0-toread- 前缀（…tid-X-fpage-0-toread--page-N.html），
+# 页码提取靠 \bpage- 正则避开 fpage-0；li.pagesone 文本为「Pages: 1/18 Go」，可作总页数兜底来源。
+read_page:
+  thread_title: ["#subject_tpc", "h1#subject", "td.h span", "h1"]
+  floors: ["tr.tr1:has(th[id^='td_'])", "table.t5", "div.t5 table", "table.cc", "table.t[width]"]
+  author: ["a[href*='u.php']:has(strong)", "a[href*='u.php']"]
+  author_uid: { attr: "href", regex: "uid-(\d+)|uid=(\d+)" }
+  # 楼层作者头像：phpwind 8 作者侧栏 div.user-pic 内的 img（2026-10 真机校准），
+  # 相对路径 attachment/upload/…；只认 user-pic 容器，避免误抓正文图片
+  author_avatar: ["div.user-pic img", ".user-pic img", ".userPic img", ".userpic img"]
+  post_time: [".tiptop span.gray", "td.smalltxt", ".tip s", "span.s1", ".fl .fl"]
+  content: ["[id^='read_']", "td.t2", "div.read_fort", "#read_tpc", ".t2"]
+  quote: ["blockquote", "table.quote", ".quote"]
+  attachments: ["a[href*='job=download']", "a[href*='action=attachment']", "a[href*='attachment.php']", "a[href*='attach.php']", "a[href*='attach-url']"]
+  edit_link: ["a[href*='action=modify']", "a[href*='job=modify']"]
+  # 2026-09 真机抓包校准：付费贴购买入口不是 <a>，而是
+  #   <input type="button" onclick="location.href='job.php?action=buytopic&tid=..&pid=..&verify=..'">
+  #   （包在 <h6 class="quote jumbotron"> 里，售价文案在 span.s3）
+  buy_link: ["a[href*='action=buytopic']", "input[onclick*='buytopic']", "a[href*='job=buy']", "a[href*='action=buy']"]
+  sale_text: ["h6.quote .s3", ".jumbotron .s3"]
+  sale_text_regex: "售价\s*([0-9]+)"
+  smiley_src_regex: "smile|face|icon_emotion|/post/"
+  reply_link: ["a[href*='action-reply']", "a[href*='action=reply']", "a[href*='post.php']"]
+  new_topic_link: ["a[href*='action-new']", "a[href*='action=new']"]
+  # 收藏入口（2026-09 真机校准）：真实按钮无 href，是
+  #   <a id="favor" onclick="sendmsg('pw_ajax.php?action=favor&tid=..','',this.id)" title="收藏该主题">收藏</a>
+  #   旧规则 a[href*='favor.php'] 永远落空（favor.php 已不存在，且按钮根本不是 <a href>）。
+  #   命中元素后由 ajaxUrlFrom 取 href 或 onclick 的 sendmsg URL。
+  favor_link: ["a#favor", "a[onclick*='action=favor']", "a[title*='收藏']", "a[href*='favor.php?action']"]
+  pagination_links: [".pages a", ".page a", "div.pages a"]
+  pagination_current: [".pages b", ".page b", "li.pagesone"]
+
+# ---------------- 登录（login.php，方案 §6.2） ----------------
+# 2026-09 真机抓包校准：验证码输入框真实字段名是 gdcode（图是 img#ckcode src="ck.php?"）。
+login_page:
+  form: ["form[action*='login.php']", "form#LoginForm", "form[name='FORMLOGIN']"]
+  username_field: ["input[name='pwuser']"]
+  password_field: ["input[name='pwpwd']", "input[type='password']"]
+  captcha_field: ["input[name='gdcode']", "input[name='verify']", "input[name='cknum']", "input[name='code']"]
+  captcha_img_regex: "ck\.php|verify|cknum|captcha|randcode"
+  password_transform: "none"
+  error_text: [".c b", "div.c", "#error", ".error"]
+
+# ---------------- 页头登录态（任意页面头部） ----------------
+user_header:
+  user_link: ["a[href*='u.php?action-show-uid']", "#user_info a[href*='u.php']", ".head a[href*='u.php']"]
+  uid: { attr: "href", regex: "uid-(\d+)|uid=(\d+)" }
+  avatar: ["#user_info img", ".head img[src*='face']"]
+  unread_pm: ["a[href*='pm.php']", "a[href*='message.php']"]
+  unread_pm_regex: "\((\d+)\)|\[(\d+)\]"
+  # 2026-09 真机抓包校准：本账号余额在 #user_info #showface 弹出面板里
+  # （「SP币: <span class="s3 f10">428 G</span>」），站点无 job=pay 链接。
+  # credit_block 限定作用域，避免误取楼层侧栏其他作者的 SP币。
+  credit_block: ["#user_info #showface", "#user_info"]
+  credit_regex: "SP币[:：]\s*([0-9.,]+\s*[A-Za-z]?)"
+  credit: ["a[href*='job=pay'] b", "#credit span", "span.s5 b"]
+
+# ---------------- 搜索（search.php，2026-10 真机校准） ----------------
+# 搜索只在 step=2 表单 POST 时真正执行（GET 直链一律「没有查找匹配的内容」）；
+# 结果行 tr.tr3.tac：td 图标 / th 主题 / td 版块 / td.smalltxt 作者+日期 /
+# td 回复数 / td 查看数 / td 最后回复(链接文本为时间，by: 用户名是裸文本)。
+search_page:
+  result_rows: ["tr.tr3", "div.result", "table.t tr"]
+  subject: ["a[href*='read.php']"]
+  tid: { attr: "href", regex: "tid-(\d+)|tid=(\d+)" }
+  board: ["a[href*='thread.php']"]
+  time: ["td.t3", "span"]
+  author: ["td.smalltxt a[href*='u.php']", "a[href*='u.php']"]
+  author_uid: { attr: "href", regex: "uid-(\d+)|uid=(\d+)" }
+  nums: ["td:nth-child(5), td:nth-child(6)"]
+  last_reply_time: ["a[href*='-page-e']", "a[href*='page-e']"]
+  pagination_links: [".pages a"]
+  pagination_current: [".pages b"]
+
+# ---------------- 发帖/回复/编辑（post.php，方案 §6.5） ----------------
+post_form:
+  form: ["form[action*='post.php']", "form[name='FORM']"]
+  title_field: ["input[name='atc_title']"]
+  content_field: ["textarea[name='atc_content']"]
+
+# ---------------- 短消息（message.php / pm.php） ----------------
+pm_page:
+  list_rows: ["tr.tr3", "table.t tr"]
+  read_link: ["a[href*='action=read']"]
+  mid: { attr: "href", regex: "mid-(\d+)|mid=(\d+)" }
+  from_user: ["a[href*='u.php']"]
+  subject: ["a[href*='action=read']"]
+  form: ["form[action*='message.php'], form[action*='pm.php']"]
+  recipient_field: ["input[name='touser'], input[name='pwuser']"]
+  title_field: ["input[name='atc_title'], input[name='title']"]
+  content_field: ["textarea[name='atc_content'], textarea"]
+
+# ---------------- 收藏夹（u.php?action-favor，2026-09 校准） ----------------
+# favor.php 在本引擎已不存在（404）；收藏列表在用户中心 u.php?action-favor.html，
+# 内容表格 class 为 u-table（无 tr3 行），行内：read.php 主链接 + 作者 + 删除操作。
+favor_page:
+  rows: ["table.u-table tr", "tr.tr3", "table.t tr"]
+  subject: ["a[href*='read.php']"]
+  tid: { attr: "href", regex: "tid-(\d+)|tid=(\d+)" }
+  remove_link: ["a[href*='job=del']", "a[href*='action=del']", "a[href*='-del-']", "a[onclick*='del']"]
+
+# ---------------- 「我的」用户中心（u.php，2026-09 校准） ----------------
+# 我的主题 u.php?action-topic / 我的回复 u.php?action-post / 好友 u.php?action-friend /
+# 商品 u.php?action-trade / 论坛任务 plugin.php?H_name-tasks。
+# 我的回复行主链接是 job.php?action-topost-tid-X-pid-Y.html（跳回楼层）。
+user_panel:
+  rows: ["table.u-table tr", "tr.tr3"]
+  thread_link: ["a[href*='read.php?tid']", "a[href*='action-topost']", "a[href*='action=topost']"]
+  tid: { attr: "href", regex: "tid-(\d+)|tid=(\d+)" }
+  user_link: ["a[href*='action-show-uid']", "a[href*='action=show&uid']"]
+  uid: { attr: "href", regex: "uid-(\d+)|uid=(\d+)" }
+  avatar: ["img.pic", "img[src*='face']"]
+  pagination_links: [".pages a", ".page a"]
+
+# ---------------- 站外图床请求头覆写（方案 §6.4.6） ----------------
+image_hosts:
+  - host: "pximg.net"
+    referer: "https://www.pixiv.net/"
+  - host: "pixhost.to"
+    referer: "https://pixhost.to/"
+  - host: "postimg.cc"
+    referer: "https://postimg.cc/"
+
+# ---------------- 网盘识别与提取码（方案 §6.4.5 资源卡片） ----------------
+pan_hosts: ["pan.baidu.com", "lanzou", "mega.nz", "drive.google.com", "alipan.com", "aliyundrive.com", "115.com", "115cdn.com", "pan.xunlei.com", "caiyun.139.com", "ctfile.com", "pan.quark.cn", "cloud.189.cn"]
+pan_names: { "pan.baidu.com": "百度网盘", "lanzou": "蓝奏云", "mega.nz": "MEGA", "drive.google.com": "Google Drive", "alipan.com": "阿里云盘", "aliyundrive.com": "阿里云盘", "115.com": "115网盘", "115cdn.com": "115网盘", "pan.xunlei.com": "迅雷云盘", "caiyun.139.com": "移动云盘", "ctfile.com": "城通网盘", "pan.quark.cn": "夸克网盘", "cloud.189.cn": "天翼云盘" }
+extract_code_patterns: ["提取码\s*[:：=]?\s*([0-9a-zA-Z]{4})", "密码\s*[:：=]?\s*([0-9a-zA-Z]{4})", "访问码\s*[:：=]?\s*([0-9a-zA-Z]{4})", "[?&]pwd=([0-9a-zA-Z]{4})"]

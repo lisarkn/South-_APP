@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 夜间模式启动窗口背景（暖黑 OLED） -->
+    <color name="launch_background">#121212</color>
+</resources>
