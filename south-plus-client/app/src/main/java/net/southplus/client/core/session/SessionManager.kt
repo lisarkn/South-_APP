@@ -15,8 +15,6 @@ import net.southplus.client.core.model.SessionState
 import net.southplus.client.core.model.UserHeader
 import net.southplus.client.core.network.HtmlGateway
 import net.southplus.client.core.network.PersistentCookieJar
-import net.southplus.client.core.network.orNull
-import net.southplus.client.core.network.orThrow
 import net.southplus.client.core.parser.LoginParser
 import net.southplus.client.core.parser.UserHeaderParser
 import org.jsoup.Jsoup
@@ -116,16 +114,32 @@ class SessionManager(
             return@withContext LoginResult.Failure("无法打开登录页：${it.message}")
         }
         val cfg = configProvider()
+        // 站点按 lgt 决定 pwuser 的解释方式（0=用户名 1=UID 2=Email，2026-11 真机确认），
+        // 输入 Email/UID 却按用户名提交时服务端查无此人，表现即「只刷新验证码不报错」。
+        val loginType = detectLoginType(identity)
         val fields = form.form.overriding(
             listOf(
                 (form.form.usernameField ?: "pwuser") to identity,
                 (form.form.passwordField ?: "pwpwd") to transformPassword(password, cfg),
                 (form.form.captchaField ?: "verify") to captcha.takeIf { it.isNotBlank() },
+                "lgt" to loginType,
             ),
         )
         val outcome = gateway.postForm(form.form.action, fields, authCheck = false)
-        val html = outcome.orNull()
-            ?: return@withContext LoginResult.Failure((outcome as? HtmlGateway.Outcome.Error)?.message ?: "登录请求失败")
+        val challengeTag = (outcome as? HtmlGateway.Outcome.Challenged)
+            ?.let { " 挑战:${it.challenge}" } ?: ""
+        net.southplus.client.core.network.DiagLog.log(
+            "LOGIN",
+            "POST ${form.form.action} → ${outcome::class.simpleName}$challengeTag",
+        )
+        val html = when (outcome) {
+            is HtmlGateway.Outcome.Ok -> outcome.body
+            // 挑战页照原文透传给 UI（被 CF 拦截 ≠ 登录请求失败，混成一句会掩盖真实原因）
+            is HtmlGateway.Outcome.Challenged -> return@withContext LoginResult.Failure(
+                "请求被站点拦截（${outcome.challenge}），请先过盾或稍后再试",
+            )
+            is HtmlGateway.Outcome.Error -> return@withContext LoginResult.Failure(outcome.message)
+        }
 
         // 校验登录态（§6.2.1：GET 确认）
         val user = checkSession()
@@ -225,6 +239,17 @@ class SessionManager(
         "md5" -> md5(password)
         "md5_upper" -> md5(password).uppercase()
         else -> password
+    }
+
+    /**
+     * 识别登录方式（站点 login.php 的 lgt 字段：0=用户名 1=UID 2=Email）。
+     * 纯数字 → UID；含 @ → Email；其余 → 用户名。无法识别时按用户名提交
+     * （覆盖绝大多数场景；用户名恰好是纯数字的极端情况可改用用户名登录绕开）。
+     */
+    private fun detectLoginType(identity: String): String = when {
+        identity.matches(Regex("\\d+")) -> "1"
+        identity.contains('@') -> "2"
+        else -> "0"
     }
 
     private fun md5(s: String): String =

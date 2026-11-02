@@ -114,6 +114,12 @@ class LoginViewModel : ViewModel() {
         captchaUrl?.let { loadCaptcha(it) }
     }
 
+    /** 用户主动重试才整表单重载（会清空错误与输入态）。 */
+    fun resetForm() {
+        _state.update { it.copy(error = null) }
+        loadForm(force = true)
+    }
+
     fun submit(identity: String, password: String, captcha: String, remember: Boolean) {
         viewModelScope.launch {
             _state.update { it.copy(submitting = true, error = null) }
@@ -124,8 +130,9 @@ class LoginViewModel : ViewModel() {
                 }
                 is LoginResult.Failure -> {
                     _state.update { it.copy(submitting = false, error = result.message) }
-                    // 失败整表单重提：刷新验证码（方案 §2.4-2）
-                    loadForm(force = true)
+                    // 失败后只换验证码：整表单重载会清掉刚写入的 error，站点返回的
+                    // 失败文案（密码错/验证码错/登录过于频繁）在界面上永远看不到。
+                    refreshCaptcha()
                 }
             }
         }
@@ -185,7 +192,7 @@ fun LoginScreen(nav: NavHostController) {
             OutlinedTextField(
                 value = identity,
                 onValueChange = { identity = it },
-                label = { Text("用户名 / UID / Email") },
+                label = { Text("用户名 / UID / Email（自动识别）") },
                 leadingIcon = { Icon(Icons.Outlined.PersonOutline, null) },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focus.moveFocus(FocusDirection.Next) }),
@@ -247,7 +254,7 @@ fun LoginScreen(nav: NavHostController) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            TextButton(onClick = { vm.loadForm(force = true) }) { Text("无法登录？刷新表单/验证码") }
+            TextButton(onClick = { vm.resetForm() }) { Text("无法登录？刷新表单/验证码") }
         }
     }
 }
